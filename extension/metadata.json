@@ -1,0 +1,8 @@
+{
+  "uuid": "pangolin-status@solrojo",
+  "name": "Pangolin Status",
+  "description": "Shows the Pangolin icon while the CLI client is connected.",
+  "shell-version": [
+    "46"
+  ]
+}
