@@ -1,0 +1,10 @@
+#panel .panel-button.pangolin-status-indicator {
+  padding: 0;
+  -natural-hpadding: 5px;
+  -minimum-hpadding: 5px;
+}
+
+#panel .panel-button.pangolin-status-indicator .system-status-icon {
+  padding: 0;
+  margin: 0;
+}

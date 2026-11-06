@@ -17,7 +17,7 @@ fi
 
 install -d "$destination"
 install -m 644 "$source_dir/metadata.json" "$source_dir/pangolin.svg" \
-    "$source_dir/status.js" "$destination/"
+    "$source_dir/status.js" "$source_dir/stylesheet.css" "$destination/"
 install -m 644 "$source_dir/extension.js" "$destination/"
 printf 'Installed in %s\n' "$destination"
 printf '%s\n' 'Log out and back in, then enable Pangolin Status in the Extensions app.'

@@ -15,6 +15,9 @@ const LOCAL_CLI_PATH = '/usr/local/bin/pangolin';
 export default class PangolinStatusExtension extends Extension {
     enable() {
         this._indicator = new PanelMenu.Button(0.0, 'Pangolin connected', true);
+        this._indicator.add_style_class_name('pangolin-status-indicator');
+        this._indicator.container.set_margin_left(4);
+        this._indicator.container.set_margin_right(4);
         this._indicator.add_child(new St.Icon({
             gicon: new Gio.FileIcon({
                 file: Gio.File.new_for_path(`${this.path}/pangolin.svg`),
