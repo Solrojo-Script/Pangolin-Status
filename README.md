@@ -1,5 +1,9 @@
 # Pangolin Status
 
+> **Archived — no longer maintained**
+>
+> This extension has been retired in favor of the [official Pangolin client for Linux](https://docs.pangolin.net/manage/clients/platforms/linux), which includes a GNOME Shell extension. This repository is preserved for reference.
+
 A GNOME Shell extension that shows a Pangolin icon in the top bar while the Pangolin CLI client is connected. Hover over the icon to see the connection status. Click it to open a compact status window with a Pangolin icon in the title bar, the official Pangolin wordmark, a green Connected indicator, the client hostname, tunnel IP, and server latency.
 
 The status window refreshes every five seconds and changes to Disconnected if the client disconnects. Close the window with **Close** or **Esc**. It does not change your Pangolin connection.
