@@ -1,3 +1,4 @@
+import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import St from 'gi://St';
@@ -37,6 +38,18 @@ export default class PangolinStatusExtension extends Extension {
 
         Main.panel.addToStatusArea(this.uuid, this._indicator, 0, 'right');
         this._indicator.connect('notify::hover', () => this._syncTooltip());
+        this._indicator.connect('button-press-event', (_actor, event) => {
+            if (event.get_button() !== 1)
+                return Clutter.EVENT_PROPAGATE;
+            this._openWindow();
+            return Clutter.EVENT_STOP;
+        });
+        this._indicator.connect('key-press-event', (_actor, event) => {
+            if (![Clutter.KEY_Return, Clutter.KEY_KP_Enter, Clutter.KEY_space].includes(event.get_key_symbol()))
+                return Clutter.EVENT_PROPAGATE;
+            this._openWindow();
+            return Clutter.EVENT_STOP;
+        });
 
         this._cliPath = GLib.find_program_in_path('pangolin') ??
             (GLib.file_test(LOCAL_CLI_PATH, GLib.FileTest.IS_EXECUTABLE)
@@ -115,7 +128,7 @@ export default class PangolinStatusExtension extends Extension {
     }
 
     _syncTooltip() {
-        if (!this._indicator || !this._indicator.visible || !this._indicator.hover) {
+        if (!this._indicator || !this._indicator.visible || !this._indicator.hover || this._windowProcess) {
             this._tooltip?.hide();
             return;
         }
@@ -131,6 +144,30 @@ export default class PangolinStatusExtension extends Extension {
         this._tooltip.set_position(x, stageY + this._indicator.height + TOOLTIP_GAP);
     }
 
+    _openWindow() {
+        if (this._windowProcess || !this._cliPath)
+            return;
+        this._tooltip?.hide();
+        try {
+            const process = Gio.Subprocess.new([
+                'python3', this.dir.get_child('pangolin-window.py').get_path(),
+                '--cli', this._cliPath,
+            ], Gio.SubprocessFlags.NONE);
+            this._windowProcess = process;
+            process.wait_async(null, (proc, result) => {
+                try {
+                    proc.wait_finish(result);
+                } catch (error) {
+                    console.warn(`Pangolin Status: ${error.message}`);
+                }
+                if (this._windowProcess === proc)
+                    this._windowProcess = null;
+            });
+        } catch (error) {
+            console.warn(`Pangolin Status: ${error.message}`);
+        }
+    }
+
     disable() {
         if (this._pollId)
             GLib.source_remove(this._pollId);
@@ -140,6 +177,8 @@ export default class PangolinStatusExtension extends Extension {
         this._queryTimeoutId = null;
         this._process?.force_exit();
         this._process = null;
+        this._windowProcess?.force_exit();
+        this._windowProcess = null;
         this._cliPath = null;
         this._tooltip?.destroy();
         this._tooltip = null;

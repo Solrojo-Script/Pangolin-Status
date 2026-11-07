@@ -15,9 +15,37 @@ if ! command -v pangolin >/dev/null 2>&1 && [ ! -x /usr/local/bin/pangolin ]; th
     exit 1
 fi
 
+python3 - <<'PY'
+import gi
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
+from gi.repository import Adw, Gtk
+PY
+
 install -d "$destination"
 install -m 644 "$source_dir/metadata.json" "$source_dir/pangolin.svg" \
-    "$source_dir/status.js" "$source_dir/stylesheet.css" "$destination/"
+    "$source_dir/status.js" "$source_dir/stylesheet.css" \
+    "$source_dir/pangolin-window.py" "$source_dir/pangolin-wordmark.png" "$destination/"
 install -m 644 "$source_dir/extension.js" "$destination/"
+python3 - "$destination" <<'PY'
+import os
+from pathlib import Path
+import shutil
+import sys
+destination = Path(sys.argv[1])
+data = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share'))
+applications = data / 'applications'
+icons = data / 'icons/hicolor/scalable/apps'
+applications.mkdir(parents=True, exist_ok=True)
+icons.mkdir(parents=True, exist_ok=True)
+shutil.copy2(destination / 'pangolin.svg', icons / 'io.github.solrojo.PangolinStatus.svg')
+helper = str(destination / 'pangolin-window.py')
+for character in ('\\', '"', '`', '$'):
+    helper = helper.replace(character, '\\' + character)
+(applications / 'io.github.solrojo.PangolinStatus.desktop').write_text(
+    '[Desktop Entry]\nType=Application\nName=Pangolin Status\n'
+    'Icon=io.github.solrojo.PangolinStatus\nNoDisplay=true\nTerminal=false\n'
+    f'Exec=python3 "{helper}"\n')
+PY
 printf 'Installed in %s\n' "$destination"
 printf '%s\n' 'Log out and back in, then enable Pangolin Status in the Extensions app.'
